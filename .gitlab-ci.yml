@@ -1,0 +1,28 @@
+variables:
+  DOCKER_HOST: tcp://docker:2375
+
+stages:
+  - build
+  - deploy
+
+build:
+  image: maven:3.6.3-jdk-8
+  only:
+    - master
+  script:
+    - 'mvn deploy -B -s settings.xml'
+  stage: build
+  artifacts:
+    paths:
+      - target/
+
+deploy:
+  image: docker:stable
+  only:
+    - master
+  script:
+    - 'docker login $REGISTRY_HOST -u $REGISTRY_USER --password $REGISTRY_PASSWORD'
+    - 'sh deploy.sh'
+  services:
+    - docker:dind
+  stage: deploy
